@@ -1,0 +1,1 @@
+set TARGETDIR=P:\PSP\GAME\ets2_dashboard
