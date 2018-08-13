@@ -21,10 +21,10 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ETS2_Telemetry.h">
+    <ClInclude Include="..\dashboard\source\ETS2_Telemetry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NetPackets.h">
+    <ClInclude Include="..\dashboard\source\NetPackets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -32,10 +32,10 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ETS2_Telemetry.cpp">
+    <ClCompile Include="..\dashboard\source\ETS2_Telemetry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NetPackets.cpp">
+    <ClCompile Include="..\dashboard\source\NetPackets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
