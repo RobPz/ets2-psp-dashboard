@@ -51,9 +51,11 @@ Most transmissions in game have 14 forward gears: 2 crawler gears and 12 drive g
 ### Developer information
 
 ##### Notes
-The PSP dashboard is compiled using [PSPSDK](https://sourceforge.net/projects/minpspw), it's pretty outdated so don't expect much.
-The server part is a Visual Studio 2015 project, the PSP dashboard is a Makefile project so you can use your preferred editor or IDE to work on it.
-All shared units are located in **dashboard/source/** folder.
+
+- The PSP dashboard is compiled using [PSPSDK](https://sourceforge.net/projects/minpspw), it's pretty outdated so don't expect much.
+- The server part is a Visual Studio 2015 project, the PSP dashboard is a Makefile project so you can use your preferred editor or IDE to work on it.
+- All shared units are located in **dashboard/source/** folder.
 
 ##### Win32 Client
+
 Win32 Client is mainly used for testing connectivity between the server and the client, but it can also be used as a base for creating custom dashboards on Windows. May be removed in future.
