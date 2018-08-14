@@ -8,7 +8,7 @@ There are two parts - the server and the client. The server is a Windows applica
 
 ### Requirements
 
-Your PSP has to have CFW (custom firmware) installed as stock PSP firmware does not allow running custom binaries.
+Your device has to have CFW (custom firmware) installed as stock PSP firmware does not allow running custom binaries.
 
 ### Dashboard overview
 
@@ -22,8 +22,6 @@ The dashboard displays following information:
 - Trailer information (cargo, weight)
 - Job information (start & destination, deadline)
 - Route status (distance & time left)
-
-Because the PSP screen is so small, there are three additional information panels at the bottom: General, Truck and Trailer. To switch between the tabs use L/R triggers, Left/Right or Square/Circle buttons.
 
 ![dashboard trailer tab](https://i.imgur.com/CpS6fbH.png)
 
@@ -43,6 +41,8 @@ Due to user inactivity the PSP's screen will eventually turn off, until I find a
 2. Start the server by running **server/bin/ETS2_Telemetry_Server.exe** and clicking **Start server**.
 3. Run **ETS2 Dashboard** on your PSP and wait for it to connect to the server.
 4. Done. If everything went well, the dashboard will be displayed.
+
+To switch between the information panels use L/R triggers, Left/Right or Square/Circle buttons. Press Start or Home button to quit.
 
 ### Transmission configurations
 
