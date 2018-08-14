@@ -58,13 +58,6 @@ ipch/
 *.VC.VC.opendb
 
 # Others
-ClientBin/
 ~$*
-*~
-*.dbmdl
-*.dbproj.schemaview
-*.jfm
-*.pfx
-*.publishsettings
-orleans.codegen.cs
 *.elf
+dashboard/ETS2_Dashboard.*
