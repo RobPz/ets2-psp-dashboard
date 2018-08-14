@@ -144,7 +144,7 @@ int main()
 {
 	// OSL initialization
 	initOSLib();
-	oslIntraFontInit(INTRAFONT_CACHE_MED | INTRAFONT_STRING_UTF8);
+	oslIntraFontInit(INTRAFONT_CACHE_ALL | INTRAFONT_STRING_UTF8);
 
 	// enable printf (can't do it earlier)
 	pspDebugScreenInit();
@@ -155,8 +155,9 @@ int main()
 
 	// our own initialization
 	resetHandles();
-	getGearMap();
 	getServerAddress();
+	getGearMap();
+	createFramebuffer();
 	loadTextures();
 	loadFonts();
 	loadDashboard();
@@ -166,69 +167,59 @@ int main()
 #ifndef NO_SERVER
 	connectToAccessPoint();
 	connect();
-#endif 
+#endif
 
 	// main loop
+	bool connected = true;
+	bool doRender = true;
 	int frameSkip = 0;
-	unsigned int framesSinceLastUpdate = 0;
-	TETS2_Telemetry telData;
+	TETS2_Telemetry telemetryData;
 	while (!osl_quit)
 	{
-		// check if the telemetry thread is running
-		bool connected = false;
-		SceKernelThreadRunStatus status;
-		status.size = sizeof(SceKernelThreadRunStatus);
-		int result = sceKernelReferThreadRunStatus(telemetryThreadID, &status);
-		if (result != 0 || status.status & PSP_THREAD_STOPPED || status.status & PSP_THREAD_KILLED)
+		// check if the telemetry thread is still running (aka are we still connected)
+#ifndef NO_SERVER
+		if (connected && !isTelemetryThreadRunning())
 		{
+			// disconnect completely and clean up
 			disconnect();
 			disconnectFromAccessPoint();
 			connected = false;
+			doRender = true;
 		}
-		else
-			connected = true;
-
-		// telemetry data
-		bool telemetryPresent = false;
-		bool telemetryChanged = false;
-		if (connected)
-		{
-			SceUInt timeout = 10 * 1000;
-			result = sceKernelWaitSema(telDataSemaphore, 1, &timeout);
-			if (result != 0)
-				terminate(false); // temp
-			telemetryPresent = telData.load(telDataBlock, telemetryChanged);
-			result = sceKernelSignalSema(telDataSemaphore, 1);
-			if (result != 0)
-				terminate(false); // temp
-		}
-		else // bypass the semaphore if the telemetry thread is not running
-			telemetryPresent = telData.load(telDataBlock, telemetryChanged);
-		if ((telemetryPresent && telData.time == TEL_DATA_EMPTY_TIMESTAMP) || !connected)
-			telemetryPresent = false;
-#ifdef NO_SERVER
-		getTestTelemetryData(telData);
-		// pretend everything's OK
-		connected = true;
-		telemetryPresent = true;
-		framesSinceLastUpdate = 0;
 #endif
+
+		// get telemetry data
+		bool telemetryPresent;
+		bool telemetryChanged;
+		getTelemetryData(telemetryData, telemetryPresent, telemetryChanged);
 		if (telemetryChanged)
-			framesSinceLastUpdate = 0;
-		else
-			framesSinceLastUpdate++;
-		if (framesSinceLastUpdate > 500)
-			telemetryPresent = false;
+			doRender = true;
 
 		// rendering
 		if (!frameSkip)
 		{
 			oslStartDrawing();
 
-			oslClearScreen(RGBA(0, 0, 0, 255));
-			oslDrawImage(textures[TEXTURE_BACKGROUND]);
+			if (doRender)
+			{
+				// render everything to framebuffer
+				oslSetDrawBuffer(textures[TEXTURE_FRAMEBUFFER]);
+				oslClearScreen(RGBA(0, 0, 0, 255));
 
-			renderDashboard(telData, connected, telemetryPresent, telemetryChanged);
+				// background
+				oslDrawImage(textures[TEXTURE_BACKGROUND]);
+
+				// dashboard
+				renderDashboard(telemetryData, connected, telemetryPresent);
+
+				// switch to default framebuffer
+				oslSetDrawBuffer(OSL_DEFAULT_BUFFER);
+
+				doRender = false;
+			}
+
+			// render the framebuffer
+			oslDrawImage(textures[TEXTURE_FRAMEBUFFER]);
 
 			oslEndDrawing();
 		}
@@ -239,8 +230,13 @@ int main()
 
 		// user input
 		oslReadKeys();
-		if (osl_keys->released.start) // exit
+
+		// exit
+		if (osl_keys->released.start)
 			break;
+
+		// tab switch
+		int previousSelectedTab = selectedTab;
 		if (osl_keys->released.L || osl_keys->released.left || osl_keys->released.square)
 			selectedTab--;
 		if (osl_keys->released.R || osl_keys->released.right || osl_keys->released.circle)
@@ -249,6 +245,9 @@ int main()
 			selectedTab = 2;
 		if (selectedTab > 2)
 			selectedTab = 0;
+
+		if (previousSelectedTab != selectedTab)
+			doRender = true;
 	}
 
 	// bye bye
@@ -413,7 +412,41 @@ bool isConnectedToAP()
 	return error == 0 && state == PSP_NET_APCTL_STATE_GOT_IP;
 }
 
-void renderDashboard(TETS2_Telemetry &data, bool connected, bool telemetryPresent, bool telemetryChanged)
+bool isTelemetryThreadRunning()
+{
+	if (telemetryThreadID >= 0)
+	{
+		SceKernelThreadRunStatus status;
+		status.size = sizeof(SceKernelThreadRunStatus);
+		int result = sceKernelReferThreadRunStatus(telemetryThreadID, &status);
+		return !(result != 0 || status.status & PSP_THREAD_STOPPED || status.status & PSP_THREAD_KILLED);
+	}
+	else
+		return false;
+}
+
+void getTelemetryData(TETS2_Telemetry &data, bool &telemetryPresent, bool &changed)
+{
+	bool result;
+#ifndef NO_SERVER
+	if (telDataSemaphore >= 0)
+	{
+		SceUInt timeout = 10 * 1000;
+		sceKernelWaitSema(telDataSemaphore, 1, &timeout);
+		result = data.load(telDataBlock, changed);
+		sceKernelSignalSema(telDataSemaphore, 1);
+	}
+	else
+		result = data.load(telDataBlock, changed);
+#else
+	getTestTelemetryData(data);
+	result = true;
+	changed = false;
+#endif
+	telemetryPresent = result && data.time != TEL_DATA_EMPTY_TIMESTAMP;
+}
+
+void renderDashboard(TETS2_Telemetry &data, bool connected, bool telemetryPresent)
 {
 	// variables
 	char text[128]; // text buffer
@@ -1186,6 +1219,24 @@ void getGearMap()
 	}
 }
 
+void createFramebuffer()
+{
+	try
+	{
+		textures[TEXTURE_FRAMEBUFFER] = oslCreateImage(SCREEN_WIDTH, SCREEN_HEIGHT, OSL_IN_VRAM, OSL_PF_8888);
+		if (textures[TEXTURE_FRAMEBUFFER] == NULL)
+			throw 1;
+		oslClearImage(textures[TEXTURE_FRAMEBUFFER], RGBA(0, 0, 0, 255));
+		textures[TEXTURE_FRAMEBUFFER]->x = 0;
+		textures[TEXTURE_FRAMEBUFFER]->y = 0;
+	}
+	catch (...)
+	{
+		printf("Unable to create a framebuffer\n");
+		terminate(true);
+	}
+}
+
 bool loadTexture(unsigned int textureId, const char* filename, bool swizzle)
 {
 	bool result = false;
@@ -1211,8 +1262,6 @@ void loadTextures()
 	try
 	{
 		loadTexture(TEXTURE_BACKGROUND, FILE_BACKGROUND);
-		textures[TEXTURE_BACKGROUND]->x = 0;
-		textures[TEXTURE_BACKGROUND]->y = 0;
 		loadTexture(TEXTURE_PAUSE, FILE_PAUSE);
 		loadTexture(TEXTURE_HOR_NUMB_BAR, FILE_HOR_NUMB_BAR);
 		loadTexture(TEXTURE_VER_NUMB_BAR, FILE_VER_NUMB_BAR);

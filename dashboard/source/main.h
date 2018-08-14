@@ -32,35 +32,36 @@ void getTestTelemetryData(TETS2_Telemetry &data);
 #define PACKET_PAYLOAD_BUFFER_SIZE (4 * 1024)
 // textures
 #define TEXTURE_COUNT 30
-#define TEXTURE_BACKGROUND 0
-#define TEXTURE_PAUSE 1
-#define TEXTURE_HOR_NUMB_BAR 2
-#define TEXTURE_VER_NUMB_BAR 3
-#define TEXTURE_SPEED_CIRCLE 4
-#define TEXTURE_CRUISE_CONTROL 5
-#define TEXTURE_TACHOMETER 6
-#define TEXTURE_TACHOMETER_NEEDLE 7
-#define TEXTURE_LEFT_BLINKER_LIGHT 8
-#define TEXTURE_RIGHT_BLINKER_LIGHT 9
-#define TEXTURE_LOW_BEAM_LIGHT 10
-#define TEXTURE_HIGH_BEAM_LIGHT 11
-#define TEXTURE_LOW_FUEL_LIGHT 12
-#define TEXTURE_RETARDER_LIGHT 13
-#define TEXTURE_PARKING_BRAKE_LIGHT 14
-#define TEXTURE_BATTERY_LOW_LIGHT 15
-#define TEXTURE_AIR_WARNING_LIGHT 16
-#define TEXTURE_AIR_EMERGENCY_LIGHT 17
-#define TEXTURE_BEACON_LIGHT 18
-#define TEXTURE_SERVICE_LIGHT 19
-#define TEXTURE_WATER_TEMPERATURE_LIGHT 20
-#define TEXTURE_OIL_PRESSURE_LIGHT 21
-#define TEXTURE_FUEL_BAR 22
-#define TEXTURE_TRAILER 23
-#define TEXTURE_NAVIGATION 24
-#define TEXTURE_WATER_ICON 25
-#define TEXTURE_OIL_ICON 26
-#define TEXTURE_FUEL_ICON 27
-#define TEXTURE_AIR_ICON 28
+#define TEXTURE_FRAMEBUFFER 0
+#define TEXTURE_BACKGROUND 1
+#define TEXTURE_PAUSE 2
+#define TEXTURE_HOR_NUMB_BAR 3
+#define TEXTURE_VER_NUMB_BAR 4
+#define TEXTURE_SPEED_CIRCLE 5
+#define TEXTURE_CRUISE_CONTROL 6
+#define TEXTURE_TACHOMETER 7
+#define TEXTURE_TACHOMETER_NEEDLE 8
+#define TEXTURE_LEFT_BLINKER_LIGHT 9
+#define TEXTURE_RIGHT_BLINKER_LIGHT 10
+#define TEXTURE_LOW_BEAM_LIGHT 11
+#define TEXTURE_HIGH_BEAM_LIGHT 12
+#define TEXTURE_LOW_FUEL_LIGHT 13
+#define TEXTURE_RETARDER_LIGHT 14
+#define TEXTURE_PARKING_BRAKE_LIGHT 15
+#define TEXTURE_BATTERY_LOW_LIGHT 16
+#define TEXTURE_AIR_WARNING_LIGHT 17
+#define TEXTURE_AIR_EMERGENCY_LIGHT 18
+#define TEXTURE_BEACON_LIGHT 19
+#define TEXTURE_SERVICE_LIGHT 20
+#define TEXTURE_WATER_TEMPERATURE_LIGHT 21
+#define TEXTURE_OIL_PRESSURE_LIGHT 22
+#define TEXTURE_FUEL_BAR 23
+#define TEXTURE_TRAILER 24
+#define TEXTURE_NAVIGATION 25
+#define TEXTURE_WATER_ICON 26
+#define TEXTURE_OIL_ICON 27
+#define TEXTURE_FUEL_ICON 28
+#define TEXTURE_AIR_ICON 29
 // fonts
 #define FONT_COUNT 10
 #define FONT_DEFAULT 0
@@ -140,13 +141,16 @@ void disconnect();
 void waitForTelemetryThread();
 void setName();
 bool isConnectedToAP();
+bool isTelemetryThreadRunning();
+void getTelemetryData(TETS2_Telemetry &data, bool &telemetryPresent, bool &changed);
 // rendering
-void renderDashboard(TETS2_Telemetry &data, bool connected, bool telemetryPresent, bool telemetryChanged);
+void renderDashboard(TETS2_Telemetry &data, bool connected, bool telemetryPresent);
 // initialization
 int initOSLib();
 void resetHandles();
 void getServerAddress();
 void getGearMap();
+void createFramebuffer();
 bool loadTexture(unsigned int textureId, const char* filename, bool swizzle = true);
 void loadTextures();
 void loadFonts();
