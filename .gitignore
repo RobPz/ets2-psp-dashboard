@@ -61,3 +61,5 @@ ipch/
 ~$*
 *.elf
 dashboard/ETS2_Dashboard.*
+dashboard/resources/gear map.txt
+dashboard/resources/server address.txt
