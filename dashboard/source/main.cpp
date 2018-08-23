@@ -47,7 +47,6 @@ const char* FILE_AIR_ICON = "resources/air pressure.png";
 // file constants (fonts)
 const char* FILE_FONT_DEFAULT = "flash0:/font/ltn0.pgf"; 
 const char* FILE_FONT_LIGHT = "flash0:/font/ltn8.pgf";
-const char* FILE_FONT_BOLD = "flash0:/font/ltn12.pgf";
 // other
 #define MINUTES_IN_HOUR 60
 #define MINUTES_IN_DAY (24 * MINUTES_IN_HOUR)
@@ -1227,8 +1226,6 @@ void createFramebuffer()
 		if (textures[TEXTURE_FRAMEBUFFER] == NULL)
 			throw 1;
 		oslClearImage(textures[TEXTURE_FRAMEBUFFER], RGBA(0, 0, 0, 255));
-		textures[TEXTURE_FRAMEBUFFER]->x = 0;
-		textures[TEXTURE_FRAMEBUFFER]->y = 0;
 	}
 	catch (...)
 	{
@@ -1314,10 +1311,6 @@ void loadFonts()
 		fonts[FONT_LIGHT] = oslLoadFontFile(FILE_FONT_LIGHT);
 		if (fonts[FONT_LIGHT] == NULL)
 			throw FONT_LIGHT;
-
-		fonts[FONT_BOLD] = oslLoadFontFile(FILE_FONT_BOLD);
-		if (fonts[FONT_BOLD] == NULL)
-			throw FONT_BOLD;
 	}
 	catch (int e)
 	{
@@ -1329,9 +1322,6 @@ void loadFonts()
 			break;
 		case FONT_LIGHT:
 			printf("\"%s\"", FILE_FONT_LIGHT);
-			break;
-		case FONT_BOLD:
-			printf("\"%s\"", FILE_FONT_BOLD);
 			break;
 		}
 		printf("\n");

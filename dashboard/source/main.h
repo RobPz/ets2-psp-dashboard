@@ -63,10 +63,9 @@ void getTestTelemetryData(TETS2_Telemetry &data);
 #define TEXTURE_FUEL_ICON 28
 #define TEXTURE_AIR_ICON 29
 // fonts
-#define FONT_COUNT 10
+#define FONT_COUNT 2
 #define FONT_DEFAULT 0
 #define FONT_LIGHT 1
-#define FONT_BOLD 2
 // packets
 #define PACKET_NAME 1
 #define PACKET_TELDATA 2
@@ -110,7 +109,6 @@ extern const char* FILE_AIR_ICON;
 // file constants (fonts)
 extern const char* FILE_FONT_DEFAULT;
 extern const char* FILE_FONT_LIGHT;
-extern const char* FILE_FONT_BOLD;
 
 /* variables */
 // textures
