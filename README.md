@@ -42,7 +42,7 @@ Due to user inactivity the PSP's screen will eventually turn off, until I find a
 3. Run **ETS2 Dashboard** on your PSP and wait for it to connect to the server.
 4. Done. If everything went well, the dashboard will be displayed.
 
-To switch between the information panels use L/R triggers, Left/Right or Square/Circle buttons. Press Start or Home button to quit.
+To switch between the information panels use L/R triggers, Left/Right or Square/Circle buttons. To toggle between kilometers and miles use Select. Press Start or Home button to quit.
 
 ### Transmission configurations
 

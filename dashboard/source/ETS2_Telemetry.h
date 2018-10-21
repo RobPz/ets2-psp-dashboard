@@ -34,7 +34,8 @@ struct TETS2_Telemetry
 	// truck
 	char truckManufacturer[TEL_DATA_STRING_SIZE];
 	char truckModel[TEL_DATA_STRING_SIZE];
-	unsigned int odometer; // km
+	unsigned int odometerKm; // kilometers
+	unsigned int odometerMi; // miles
 	float engineWear;
 	float transmissionWear;
 	float cabinWear;
@@ -52,7 +53,8 @@ struct TETS2_Telemetry
 	// fuel
 	unsigned int fuel; // litres
 	unsigned int fuelCapacity; // litres
-	unsigned int fuelRange; // km
+	unsigned int fuelRangeKm; // kilometers
+	unsigned int fuelRangeMi; // miles
 	// transmission
 	int gear;
 	int gearDashboard;
@@ -82,7 +84,7 @@ struct TETS2_Telemetry
 	// trailer
 	bool trailerAttached;
 	char cargo[TEL_DATA_STRING_SIZE];
-	unsigned int trailerMass; // kg
+	unsigned int trailerMass; // kilograms
 	float trailerWear;
 	// job info
 	bool onJob;
@@ -94,16 +96,17 @@ struct TETS2_Telemetry
 	char jobCompanySource[TEL_DATA_STRING_SIZE];
 	char jobCompanyDestination[TEL_DATA_STRING_SIZE];
 	// navigation
-	int speedKmh;
-	int speedMph;
-	unsigned int speedLimitKmh;
-	unsigned int speedLimitMph;
-	unsigned int routeDistance; // meters
+	int speedKmh; // kilometers per hour
+	int speedMph; // miles per hour
+	unsigned int speedLimitKmh; // kilometers per hour
+	unsigned int speedLimitMph; // miles per hour
+	unsigned int routeDistanceM; // meters
+	unsigned int routeDistanceY; // yards
 	unsigned int routeTime; // minutes
 	// cruise control
 	bool cruiseControl;
-	int cruiseControlSpeedKmh;
-	int cruiseControlSpeedMph;
+	int cruiseControlSpeedKmh; // kilometers per hour
+	int cruiseControlSpeedMph; // miles per hour
 
 	/* methods */
 	bool load(void* source);

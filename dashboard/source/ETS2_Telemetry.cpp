@@ -79,6 +79,26 @@ bool getAux(void* source, size_t offset, Aux aux)
 	return getByte(source, offset + aux) > 0;
 }
 
+float kilometersToMiles(float kilometers)
+{
+	return kilometers * 0.621371192f;
+}
+
+float metersToYards(float meters)
+{
+	return meters * 1.0936133f;
+}
+
+float metersSecondToKilometersHour(float metersPerSecond)
+{
+	return (metersPerSecond * 60.0f * 60.0f) / 1000.0f;
+}
+
+float metersSecondToMilesHour(float metersPerSecond)
+{
+	return metersPerSecond * 2.2369f;
+}
+
 /* other methods */
 unsigned int getTimestamp(void* source)
 {
@@ -140,7 +160,9 @@ bool TETS2_Telemetry::load(void* source, bool &changed)
 			// truck
 			getString(source, truckManufacturer, 676);
 			getString(source, truckModel, 804);
-			odometer = (unsigned int)round(getFloat(source, 668));
+			float odometer = getFloat(source, 668);
+			odometerKm = (unsigned int)round(odometer);
+			odometerMi = (unsigned int)round(kilometersToMiles(odometer));
 			engineWear = getFloat(source, 644);
 			transmissionWear = getFloat(source, 648);
 			cabinWear = getFloat(source, 652);
@@ -150,8 +172,8 @@ bool TETS2_Telemetry::load(void* source, bool &changed)
 
 			// engine
 			engineRunning = getAux(source, 580, EngineEnabled);
-			engineRPM = (int)round(getFloat(source, 80));
-			engineRPMMax = (int)round(getFloat(source, 84));
+			engineRPM = (int)getFloat(source, 80);
+			engineRPMMax = (int)getFloat(source, 84);
 
 			// brakes
 			retarderBrake = (unsigned int)getInt(source, 564);
@@ -161,7 +183,9 @@ bool TETS2_Telemetry::load(void* source, bool &changed)
 			// fuel
 			fuel = (unsigned int)getFloat(source, 88);
 			fuelCapacity = (unsigned int)getFloat(source, 92);
-			fuelRange = (unsigned int)getFloat(source, 880);
+			float fuelRange = getFloat(source, 880);
+			fuelRangeKm = (unsigned int)floor(fuelRange);
+			fuelRangeMi = (unsigned int)floor(kilometersToMiles(fuelRange));
 
 			// transmission
 			gear = getInt(source, 64);
@@ -212,19 +236,21 @@ bool TETS2_Telemetry::load(void* source, bool &changed)
 
 			// navigation
 			float speed = getFloat(source, 24); // m/s
-			speedKmh = (int)round(speed * 3.6f);
-			speedMph = (int)round(speed * 3.6f / 1.6f);
+			speedKmh = (int)round(metersSecondToKilometersHour(speed));
+			speedMph = (int)round(metersSecondToMilesHour(speed));
 			float speedLimit = getFloat(source, 868); // m/s
-			speedLimitKmh = (unsigned int)round(speedLimit * 3.6f);
-			speedLimitMph = (unsigned int)round(speedLimit * 3.6f / 1.6f);
-			routeDistance = (unsigned int)round(getFloat(source, 872));
+			speedLimitKmh = (unsigned int)round(metersSecondToKilometersHour(speedLimit));
+			speedLimitMph = (unsigned int)round(metersSecondToMilesHour(speedLimit));
+			float routeDistance = getFloat(source, 872);
+			routeDistanceM = (unsigned int)round(routeDistance);
+			routeDistanceY = (unsigned int)round(metersToYards(routeDistance));
 			routeTime = (unsigned int)round(getFloat(source, 876) / 60.0f);
 
 			// cruise control
 			cruiseControl = getAux(source, 580, CruiseControl);
 			float cruiseControlSpeed = getFloat(source, 672); // m/s
-			cruiseControlSpeedKmh = (int)round(cruiseControlSpeed * 3.6f);
-			cruiseControlSpeedMph = (int)round(cruiseControlSpeed * 3.6f / 1.6f);
+			cruiseControlSpeedKmh = (int)round(metersSecondToKilometersHour(cruiseControlSpeed));
+			cruiseControlSpeedMph = (int)round(metersSecondToMilesHour(cruiseControlSpeed));
 
 			changed = true;
 		}

@@ -187,7 +187,7 @@ void displayTelData(TETS2_Telemetry* data)
 		SetDlgItemText(hWindow, IDC_TELDATAFIELD2, charBuffer);
 
 		// odometer
-		sprintf_s(charBuffer, TEXT_BUF_SIZE, "%u km", data->odometer);
+		sprintf_s(charBuffer, TEXT_BUF_SIZE, "%u km", data->odometerKm);
 		SetDlgItemText(hWindow, IDC_TELDATAFIELD3, charBuffer);
 
 		// lights

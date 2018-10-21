@@ -118,6 +118,7 @@ OSL_FONT* fonts[FONT_COUNT];
 // dashboard
 SegmentDisplay* speedometer;
 int selectedTab;
+bool useMetric;
 // for connecting
 char serverIP[16];
 uint16_t serverPort;
@@ -159,6 +160,7 @@ void connectToAccessPoint();
 void disconnectFromAccessPoint();
 void freeResources();
 void terminate(bool waitForUser);
-
-/* threads */
+// threads
 int telemetryThread(SceSize args, void *argp);
+// miscellaneous
+// ...

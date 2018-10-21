@@ -50,6 +50,8 @@ const char* FILE_FONT_LIGHT = "flash0:/font/ltn8.pgf";
 // other
 #define MINUTES_IN_HOUR 60
 #define MINUTES_IN_DAY (24 * MINUTES_IN_HOUR)
+#define METERS_IN_KILOMETER 1000
+#define YARDS_IN_MILE 1760
 
 void getTestTelemetryData(TETS2_Telemetry &data)
 {
@@ -67,7 +69,8 @@ void getTestTelemetryData(TETS2_Telemetry &data)
 	// truck
 	strcpy(data.truckManufacturer, "Scania");
 	strcpy(data.truckModel, "R 2012");
-	data.odometer = 80652; // km
+	data.odometerKm = 80652; // kilometers
+	data.odometerMi = 50114; // miles
 	data.engineWear = 0.07f;
 	data.transmissionWear = 0.11f;
 	data.cabinWear = 0.06f;
@@ -85,7 +88,8 @@ void getTestTelemetryData(TETS2_Telemetry &data)
 	// fuel
 	data.fuel = 756; // litres
 	data.fuelCapacity = 1400; // litres
-	data.fuelRange = 2354; // km
+	data.fuelRangeKm = 2354; // kilometers
+	data.fuelRangeMi = 1462; // miles
 	// transmission
 	data.gear = 13;
 	data.gearDashboard = 13;
@@ -115,7 +119,7 @@ void getTestTelemetryData(TETS2_Telemetry &data)
 	// trailer
 	data.trailerAttached = true;
 	strcpy(data.cargo, "Test Cargo");
-	data.trailerMass = 17562; // kg
+	data.trailerMass = 17562; // kilograms
 	data.trailerWear = 0.15f;
 	// job info
 	data.onJob = true;
@@ -128,15 +132,16 @@ void getTestTelemetryData(TETS2_Telemetry &data)
 	strcpy(data.jobCompanyDestination, "Posped");
 	// navigation
 	data.speedKmh = 75;
-	data.speedMph = (int)round(data.speedKmh / 1.6f);
+	data.speedMph = 47;
 	data.speedLimitKmh = 90;
-	data.speedLimitMph = (int)round(data.speedLimitKmh / 1.6f);
-	data.routeDistance = 224648; // meters
+	data.speedLimitMph = 56;
+	data.routeDistanceM = 224648; // meters
+	data.routeDistanceY = 245678; // yards
 	data.routeTime = 168; // minutes
 	// cruise control
 	data.cruiseControl = true;
 	data.cruiseControlSpeedKmh = 85;
-	data.cruiseControlSpeedMph = (int)round(data.cruiseControlSpeedKmh / 1.6f);
+	data.cruiseControlSpeedMph = 53;
 }
 
 int main()
@@ -244,9 +249,15 @@ int main()
 			selectedTab = 2;
 		if (selectedTab > 2)
 			selectedTab = 0;
-
 		if (previousSelectedTab != selectedTab)
 			doRender = true;
+
+		// unit system togggle
+		if (osl_keys->released.select)
+		{
+			useMetric = !useMetric;
+			doRender = true;
+		}
 	}
 
 	// bye bye
@@ -464,11 +475,11 @@ void renderDashboard(TETS2_Telemetry &data, bool connected, bool telemetryPresen
 	speedometer->setTop(topSectionSize);
 	speedometer->setLeft(SCREEN_WIDTH / 2 - speedometer->getWidth() / 2
 		- speedometer->getSingleDigitWidth() / 2 - speedometer->getDigitPadding() / 2);
-	speedometer->setValue(telemetryPresent && connected ? abs(data.speedKmh) : -11);
+	speedometer->setValue(telemetryPresent && connected ? abs(useMetric? data.speedKmh : data.speedMph) : -11);
 	speedometer->render();
 
 	// speedometer units
-	strcpy(text, "km/h");
+	strcpy(text, useMetric ? "km/h" : "mi/h");
 	tSize = 0.6f;
 	oslSetFont(fonts[FONT_DEFAULT]);
 	oslIntraFontSetStyle(fonts[FONT_DEFAULT], tSize, RGBA(180, 180, 180, 255), RGBA(0, 0, 0, 0), INTRAFONT_ALIGN_CENTER);
@@ -478,7 +489,10 @@ void renderDashboard(TETS2_Telemetry &data, bool connected, bool telemetryPresen
 	oslDrawString(x, y, text);
 
 	// odometer
-	sprintf(text, "%d km", data.odometer);
+	if (useMetric)
+		sprintf(text, "%d km", data.odometerKm);
+	else
+		sprintf(text, "%d mi", data.odometerMi);
 	tSize = 0.7f;
 	oslSetFont(fonts[FONT_DEFAULT]);
 	oslIntraFontSetStyle(fonts[FONT_DEFAULT], tSize, RGBA(240, 240, 240, 255), RGBA(0, 0, 0, 0), INTRAFONT_ALIGN_CENTER);
@@ -516,8 +530,9 @@ void renderDashboard(TETS2_Telemetry &data, bool connected, bool telemetryPresen
 		oslDrawImage(textures[TEXTURE_SPEED_CIRCLE]);
 
 		// speed limit value
-		sprintf(text, "%u", data.speedLimitKmh);
-		tSize = data.speedLimitKmh >= 100 ? 0.9f : 1.0f; // just to make it fit better inside the circle
+		unsigned int speedLimit = useMetric ? data.speedLimitKmh : data.speedLimitMph;
+		sprintf(text, "%u", speedLimit);
+		tSize = speedLimit >= 100 ? 0.9f : 1.0f; // just to make it fit better inside the circle
 		oslSetFont(fonts[FONT_DEFAULT]);
 		oslIntraFontSetStyle(fonts[FONT_DEFAULT], tSize, RGBA(255, 255, 255, 255), RGBA(0, 0, 0, 0), INTRAFONT_ALIGN_CENTER);
 		tHeight = (int)round(osl_curFont->charHeight * tSize);
@@ -531,7 +546,7 @@ void renderDashboard(TETS2_Telemetry &data, bool connected, bool telemetryPresen
 		const unsigned int spacing = 5; // spacing between the text and the icon
 		int y2;
 
-		sprintf(text, "%u", data.cruiseControlSpeedKmh);
+		sprintf(text, "%u", useMetric ? data.cruiseControlSpeedKmh : data.cruiseControlSpeedMph);
 		tSize = 1.0f;
 		oslSetFont(fonts[FONT_DEFAULT]);
 		oslIntraFontSetStyle(fonts[FONT_DEFAULT], tSize, RGBA(255, 255, 255, 255), RGBA(0, 0, 0, 0), INTRAFONT_ALIGN_LEFT);
@@ -622,7 +637,7 @@ void renderDashboard(TETS2_Telemetry &data, bool connected, bool telemetryPresen
 		oslDrawImage(textures[TEXTURE_RIGHT_BLINKER_LIGHT]);
 	}
 	
-	// gear
+	// selected gear
 	tSize = 1.0f;
 	oslSetFont(fonts[FONT_DEFAULT]);
 	oslIntraFontSetStyle(fonts[FONT_DEFAULT], tSize, RGBA(255, 255, 255, 255), RGBA(0, 0, 0, 0), INTRAFONT_ALIGN_CENTER);
@@ -736,7 +751,7 @@ void renderDashboard(TETS2_Telemetry &data, bool connected, bool telemetryPresen
 		oslDrawImage(textures[TEXTURE_AIR_EMERGENCY_LIGHT]);
 	}
 
-	// service needed
+	// service light
 	if (data.engineWear >= 0.1f || data.transmissionWear >= 0.1f || data.chassisWear >= 0.1f || data.truckWear >= 0.1f)
 	{
 		oslSetImageRotCenter(textures[TEXTURE_SERVICE_LIGHT]);
@@ -822,7 +837,7 @@ void renderDashboard(TETS2_Telemetry &data, bool connected, bool telemetryPresen
 	// general tab
 	if (selectedTab == 0)
 	{
-		bool displayRouteInfo = data.routeDistance > 0;
+		bool displayRouteInfo = data.routeDistanceM > 0;
 		unsigned int sideOffset = SCREEN_WIDTH / 13;
 
 		tSize = 1.0f;
@@ -866,15 +881,28 @@ void renderDashboard(TETS2_Telemetry &data, bool connected, bool telemetryPresen
 			y += 18;
 			oslDrawString(x, y, text);
 
-			// distance left
+			// remaining distance
 			oslIntraFontSetStyle(fonts[FONT_LIGHT], tSize, RGBA(255, 255, 255, 255), RGBA(0, 0, 0, 0), INTRAFONT_ALIGN_CENTER);
-			if (data.routeDistance >= 1000)
-				sprintf(text, "%u km", data.routeDistance / 1000);
-			else
-				if (data.routeDistance >= 100)
-					sprintf(text, "%.1f km", data.routeDistance * 0.001f);
+			if (useMetric)
+			{
+				if (data.routeDistanceM > METERS_IN_KILOMETER)
+					sprintf(text, "%u km", data.routeDistanceM / METERS_IN_KILOMETER);
 				else
-					sprintf(text, "<0.1 km");
+					if (data.routeDistanceM >= (unsigned int)(METERS_IN_KILOMETER * 0.1f))
+						sprintf(text, "%.1f km", (float)data.routeDistanceM / METERS_IN_KILOMETER);
+					else
+						sprintf(text, "<0.1 km");
+			}
+			else
+			{
+				if (data.routeDistanceY > YARDS_IN_MILE)
+					sprintf(text, "%u mi", data.routeDistanceY / YARDS_IN_MILE);
+				else
+					if (data.routeDistanceY >= (unsigned int)(YARDS_IN_MILE * 0.1f))
+						sprintf(text, "%.1f mi", (float)data.routeDistanceY / YARDS_IN_MILE);
+					else
+						sprintf(text, "<0.1 mi");
+			}
 			y += tHeight + 10;
 			oslDrawString(x, y, text);
 
@@ -941,7 +969,10 @@ void renderDashboard(TETS2_Telemetry &data, bool connected, bool telemetryPresen
 		oslDrawImage(textures[TEXTURE_FUEL_ICON]);
 		// value
 		oslIntraFontSetStyle(fonts[FONT_LIGHT], tSize, RGBA(255, 255, 255, 255), RGBA(0, 0, 0, 0), INTRAFONT_ALIGN_LEFT);
-		sprintf(text, "%u l | %u km", data.fuel, data.fuelRange);
+		if (useMetric)
+			sprintf(text, "%u l | %u km", data.fuel, data.fuelRangeKm);
+		else
+			sprintf(text, "%u l | %u mi", data.fuel, data.fuelRangeMi);
 		x = textures[TEXTURE_FUEL_ICON]->x + textures[TEXTURE_FUEL_ICON]->sizeX / 2 + offset;
 		y = textures[TEXTURE_FUEL_ICON]->y - tHeight / 2;
 		oslDrawString(x, y + 5, text); // y fix
@@ -1342,6 +1373,7 @@ void loadDashboard()
 		speedometer = new SegmentDisplay(3, textures[TEXTURE_HOR_NUMB_BAR], textures[TEXTURE_VER_NUMB_BAR], 6, 1);
 
 		selectedTab = 0;
+		useMetric = true;
 	}
 	catch (int e)
 	{
@@ -1426,15 +1458,15 @@ void connectToAccessPoint()
 			{
 				memset(param, 0, sizeof(netData));
 				sceUtilityGetNetParam(configurations[i], PSP_NETPARAM_SSID, param);
-				char button[16];
+				char button[8 + 1];
 				switch (i)
 				{
-				case 0: strcpy(button, "CROSS"); break;
-				case 1: strcpy(button, "CIRCLE"); break;
-				case 2: strcpy(button, "SQUARE"); break;
+				case 0: strcpy(button, "   CROSS"); break;
+				case 1: strcpy(button, "  CIRCLE"); break;
+				case 2: strcpy(button, "  SQUARE"); break;
 				case 3: strcpy(button, "TRIANGLE"); break;
 				}
-				printf("  \"%s\"  -  %s\n", param->asString, button);
+				printf("  %s  -  \"%s\"\n", button, param->asString);
 			}
 			free(param);
 			SceCtrlLatch latch;
