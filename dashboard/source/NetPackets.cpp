@@ -48,6 +48,7 @@ bool TPacketBuffer::write(void* data, size_t dataSize)
 				memcpy((void*)((char*)mBuffer + offset1), (void*)((char*)mBuffer + offset2), blockSize);
 				offset1 += blockSize;
 				offset2 += blockSize;
+				copyCount--;
 			}
 			if (tail > 0)
 				memcpy((void*)((char*)mBuffer + offset1), (void*)((char*)mBuffer + offset2), tail);
